@@ -27,11 +27,11 @@ from collie.module import GPTLMLoss
 
 # 1. 设置路径
 # 1.1 预训练模型路径
-pretrained_model = "fnlp/moss-moon-003-sft"
+pretrained_model = "/remote-home/share/MOSS_7B_Base/"
 
 # 2. 设置配置
 # 2.1 加载配置
-config = CollieConfig.from_pretrained(pretrained_model, trust_remote_code=True)
+config = CollieConfig.from_pretrained(pretrained_model)
 config.tp_size = 2
 config.dp_size = 2
 config.pp_size = 1
@@ -56,7 +56,7 @@ config.ds_config = {
 }
 
 # 3. 设置tokenizer
-tokenizer = AutoTokenizer.from_pretrained(pretrained_model, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(pretrained_model)
 
 # 4. 加载数据集
 train_dataset = [
@@ -69,7 +69,7 @@ train_dataset = CollieDatasetForTraining(train_dataset, tokenizer)
 eval_dataset = train_dataset[:32]
 
 # 5. 加载预训练模型
-model = MossForCausalLM.from_pretrained("/mnt/petrelfs/share_data/zhangshuo/model/moss-moon-003-sft/", config=config)
+model = MossForCausalLM.from_pretrained("/remote-home/share/MOSS_7B_Base/", config=config)
 
 # 6. 设置优化器
 optimizer = Lomo(
@@ -126,5 +126,5 @@ trainer = Trainer(
 
 # 10. 训练/验证
 trainer.train()
-
-#  Command CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:29402 --nnodes=1 --nproc_per_node=4 train.py
+# srun -p llm --quotatype=spot --ntasks=32 --ntasks-per-node=8 --gres=gpu:8 --cpus-per-task=8 python finetune_llama_for_classification.py
+#  Command CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:29402 --nnodes=1 --nproc_per_node=4 finetune_moss_for_training.py
